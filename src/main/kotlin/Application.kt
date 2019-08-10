@@ -1,22 +1,23 @@
 import com.jme3.app.SimpleApplication
 import com.jme3.asset.MaterialKey
-import com.jme3.material.Material
-import com.jme3.math.ColorRGBA
 import com.jme3.math.Vector3f
 import com.jme3.scene.Geometry
 import com.jme3.scene.Node
 import com.jme3.scene.shape.Box
 import com.jme3.light.DirectionalLight
-
-// TODO - major - load stage scene
-// TODO - minor - git ignore jmonkeybuilder hidden dir
+import com.jme3.scene.Spatial
+import com.jme3.system.AppSettings
 
 class Application : SimpleApplication() {
 
     private lateinit var pivot: Node
 
     override fun simpleInitApp() {
-        // parent node
+        // scene node
+        val scene = assetManager.loadModel("Scenes/test_scene.j3o")
+        rootNode.attachChild(scene)
+
+        // parent node for additional boxes
         pivot = Node("pivot")
         rootNode.attachChild(pivot)
 
@@ -38,6 +39,16 @@ class Application : SimpleApplication() {
         val sun = DirectionalLight()
         sun.direction = Vector3f(-0.1f, -0.7f, -1.0f).normalizeLocal()
         rootNode.addLight(sun)
+
+        dump(rootNode, 0)
+    }
+
+    private fun dump(spatial: Spatial, level: Int) {
+        val spacing = "  ".repeat(level)
+        println("$spacing${spatial.name}")
+        (spatial as? Node)?.children?.forEach {
+            dump(it, level + 1)
+        }
     }
 
     override fun simpleUpdate(tpf: Float) {
