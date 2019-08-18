@@ -4,55 +4,52 @@ import com.jme3.math.Vector3f
 import com.jme3.scene.Geometry
 import com.jme3.scene.Node
 import com.jme3.scene.shape.Box
-import com.jme3.light.DirectionalLight
 import com.jme3.scene.Spatial
 import com.jme3.system.AppSettings
 
 class Application : SimpleApplication() {
 
-    private lateinit var pivot: Node
+    private lateinit var pivot: Spatial
+    private lateinit var cube: Spatial
 
     override fun simpleInitApp() {
-        // scene node
+        // create scene
+        // .. import it
         val scene = assetManager.loadModel("Scenes/test_scene.j3o")
         rootNode.attachChild(scene)
+        // .. add stuff to it
+        (scene as Node).attachChild(createSampleBoxes())
 
-        // parent node for additional boxes
-        pivot = Node("pivot")
-        rootNode.attachChild(pivot)
+        rootNode.dump()
+
+        // lookup spatials we need to update
+        cube = scene.find("Cube")!!
+        pivot = scene.find("Pivot")!!
+    }
+
+    override fun simpleUpdate(tpf: Float) {
+        pivot.rotate(0f, .4f * tpf, 0f)
+        cube.rotate(0f, -.25f * tpf, 0f)
+    }
+
+    private fun createSampleBoxes(): Node {
+        val node = Node("Pivot")
 
         // .. dull box
         val box1 = Box(1f, 1f, 1f)
         val dull = Geometry("Box", box1)
-        dull.localTranslation = Vector3f(1f, -1f, 1f)
+        dull.localTranslation = Vector3f(1.5f, -1f, 0f)
         dull.material = assetManager.loadAsset(MaterialKey("Materials/dull_green.j3m"))
-        pivot.attachChild(dull)
+        node.attachChild(dull)
 
         // .. shiny box
         val box2 = Box(1f, 1f, 1f)
         val shiny = Geometry("Box", box2)
-        shiny.localTranslation = Vector3f(1f, 3f, 1f)
+        shiny.localTranslation = Vector3f(-1.5f, -1f, 0f)
         shiny.material = assetManager.loadAsset(MaterialKey("Materials/shiny_green.j3m"))
-        pivot.attachChild(shiny)
+        node.attachChild(shiny)
 
-        // light node
-        val sun = DirectionalLight()
-        sun.direction = Vector3f(-0.1f, -0.7f, -1.0f).normalizeLocal()
-        rootNode.addLight(sun)
-
-        dump(rootNode, 0)
-    }
-
-    private fun dump(spatial: Spatial, level: Int) {
-        val spacing = "  ".repeat(level)
-        println("$spacing${spatial.name}")
-        (spatial as? Node)?.children?.forEach {
-            dump(it, level + 1)
-        }
-    }
-
-    override fun simpleUpdate(tpf: Float) {
-        pivot.rotate(.4f * tpf, .4f * tpf, 0f)
+        return node
     }
 
 }
